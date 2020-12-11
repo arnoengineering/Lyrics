@@ -145,17 +145,28 @@ def search_csv(art_li):
     return out_song
 
 
-def hints(lyr, hint, num):  # adds to lyrics so hint can be displayed
-    if hint in lyr.keys():
-        hint_box = """<input type="checkbox" id="handle{num}" />
-                <label for="handle{num}">
-                Title
-                </label>
-
-              <div class="content">
-                <p> '{hint}: {h_val}</p>
-              </div>""".format(num=num, hint=hint, h_val=lyr[hint])
-        return hint_box
+def hints(lyr, hint_ls, num):  # adds to lyrics so hint can be displayed
+    hint_tot = """"""
+    # loops through hints then appends
+    # form_html = form_html.replace('</body>', '').replace('</html>', '')
+    for hint in hint_ls:
+        num += 1
+        if hint in lyr.keys():
+            hint_box = """
+                    <tr>
+                    <td>
+                    <input type="checkbox" id="handle{num}" />
+                    <label for="handle{num}">
+                    Title
+                    </label>
+    
+                  <div class="content">
+                    <p> '{hint}: {h_val}</p>
+                  </div>
+                  </td>
+                  </tr>""".format(num=num, hint=hint, h_val=lyr[hint])
+            hint_tot += ' \n' + hint_box
+    return hint_tot
 
 
 def email(sub_lyr, s_info):  # todo add hints in header, check album
@@ -178,19 +189,15 @@ def email(sub_lyr, s_info):  # todo add hints in header, check album
         with open('LyEmail.html', 'r') as h_file:
             # replaces items so html works on qwn, but can format
             html = h_file.read().replace('{', '{{').replace('}', '}}').replace('%#', '{').replace('#%', '}')
-            form_html = html.format(lyrics=sub_lyr, title=s_info['Title'], artist=s_info['Artist'],
-                                    full_lyrics=s_info['Lyrics'])
+            html = html.replace('<!--{', '{').replace('}-->', '}')
+        num = html.count('handle')  # counts instances already
 
-            msg.attach(MIMEText(form_html, 'html'))
+        h_ls = ['Album', 'Rank', 'Genre']
+        html_ex = hints(s_info, h_ls, num)
+        form_html = html.format(lyrics=sub_lyr, title=s_info['Title'], artist=s_info['Artist'],
+                                full_lyrics=s_info['Lyrics'], extra_info=html_ex)
 
-        # loops through hints then appends
-        num = form_html.count('handle')  # num of hints already
-        # form_html = form_html.replace('</body>', '').replace('</html>', '')
-        # for it in ['Album', 'Rank', 'Genre']:
-        #     num += 1
-        #     hint_box = hints(s_info, it, num)
-        #     form_html += '\n' + hint_box
-        # form_html += '\n</body>' + '\n</html>'
+        msg.attach(MIMEText(form_html, 'html'))
 
     except FileNotFoundError as e:
         print('Error Loading HTML: ', e)
