@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lyric Email</title>
+    <style>
+        td {
+        text-align: center;
+        }
+
+        input {
+            display: none;
+        }
+
+        label {
+            display: block;
+            padding: 8px 22px;
+            margin: 0 0 1px 0;
+            cursor: pointer;
+            background: #D42020;
+            border-radius: 3px;
+            color: #FFF;
+            transition: ease .5s;
+        }
+
+        label:hover {
+            background: #4E8774;
+        }
+
+        .content {
+            background: #14AAC2;
+            padding: 10px 25px;
+            border: 1px solid #A7A7A7;
+            margin: 0 0 1px 0;
+            border-radius: 3px;
+        }
+        input + label + .content {
+            display: none;
+        }
+
+        /*hover to stop error google*/
+        input:hover + label + .content {
+            display: block;
+        }
+
+        .content:hover {
+            display: block;
+        }
+
+
+
+    </style>
+</head>
+<body>
+<!--# % for formatting, in python; {} get replaced by double and # % are replaced by } thus can run in both-->
+    <table style="background-image: url('https://static.wixstatic.com/media/4fd938_9ce2819141f04bb2b166fda3ddc435e9~mv2.jpg/v1/fill/w_597,h_901,fp_0.50_0.50,q_90/4fd938_9ce2819141f04bb2b166fda3ddc435e9~mv2.webp');">
+        <tr>
+            <th>Lyrics for you:</th>
+        </tr>
+        <tr>
+            <td height="700" width="590">
+            <pre>%#lyrics#%</pre>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" id="handle1" />
+                <label for="handle1">Hint</label>
+
+                <div class="content">
+                    <pre>%#full_lyrics#%</pre>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="checkbox" id="handle2" />
+                    <label for="handle2">Title</label>
+
+                <div class="content">
+                    <p> The song is: %#title#%, by: %#artist#%</p>
+                </div>
+            </td>
+        </tr>
+        </table>
+
+</body>
+</html>
