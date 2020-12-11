@@ -8,7 +8,7 @@ import pandas as pd
 path = os.getcwd()
 
 # tokens
-with open('pass.text', 'r') as f:
+with open('pass.txt', 'r') as f:
     file = f.readlines()
     token = file[1]
     usr = file[3]
