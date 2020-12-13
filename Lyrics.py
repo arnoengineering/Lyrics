@@ -19,11 +19,11 @@ path = os.getcwd()
 # tokens
 with open('pass.txt', 'r') as f:
     file = f.readlines()
-    token = file[1]
-    usr = file[3]
-    password = file[5]
-    receivers = file[7].split(',')  # list of all receivers
-genius = Genius(token)
+    token = file[1].strip()
+    usr = file[3].strip()
+    password = file[5].strip()
+    receivers = file[7].strip().split(',')  # list of all receivers
+genius = Genius(token, timeout=10)
 
 # sets day of week to run on sunday, and timing
 start_time = datetime.now()
@@ -115,7 +115,7 @@ def grab_artist(art, ret=False):
     global tot_songs
     artist_dict = {}
     r_time = datetime.now()
-    art_obj = genius.search_artist(art, get_full_info=False)  # max songs for debug
+    art_obj = genius.search_artist(art, get_full_info=True)  # max songs for debug
 
     for songs in art_obj.songs:  # loops though for each song
         collect_song_data(songs, artist_dict)
