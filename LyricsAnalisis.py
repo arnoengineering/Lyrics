@@ -30,6 +30,7 @@ file_pre = ' Songs'
 
 # list of artist to search
 artist_ls = ["Skillet", "Ledger", "Icon for Hire", "Lacey Sturm"]
+album_ls = {}
 
 
 class ReadSong:
@@ -86,3 +87,19 @@ class ReadSong:
         r_time = datetime.now()
 
     print("Total time: ", datetime.now() - start_time)  # todo return so I can mod data
+
+
+def count_inst(song, phrase):
+    cnt = song['Lyrics'].count(phrase)
+    song['Count'] = cnt
+
+
+def save_me(artist):
+    for song in artist:
+        count_inst(song, 'Save Me')
+        alb = song['Album']
+        if alb not in album_ls.keys():
+            album_ls[alb] = 0
+        album_ls[alb] += 1
+    total = sum(album_ls.values())
+    album_ls['Total'] = total
