@@ -243,7 +243,8 @@ try:
 except ZeroDivisionError:
     tps = 0
 time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
-write_csv('Time', time_dict)  # since index is run by dict and 'art' is name
+if tot_songs > 0:
+    write_csv('Time', time_dict)  # since index is run by dict and 'art' is name
 
 print("Total time:",  tot_time)
 print("{} Songs, at: {} per song".format(tot_songs, tps))
