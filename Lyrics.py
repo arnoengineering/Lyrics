@@ -1,5 +1,6 @@
 import smtplib
 import random
+import sys
 from datetime import date, datetime
 import ssl
 from lyricsgenius import Genius
@@ -11,11 +12,19 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from GrabLyr import soup_lyrics
 import re
+# import logging
 
 # todo
-"""todo add different years
-return e when error"""
+"""
+todo add different years
+return e when error
+email both at once 
+logging
+filename = ''
+"""
+
 # save dir
+os.chdir(os.path.dirname(sys.argv[0]))
 path = os.getcwd()
 
 # tokens
@@ -147,88 +156,98 @@ def search_csv(art_li):
     return out_song
 
 
-def hints(lyr, hint_ls, num):  # adds to lyrics so hint can be displayed
-    hint_tot = """"""
-    # loops through hints then appends
-    # form_html = form_html.replace('</body>', '').replace('</html>', '')
-    for hint in hint_ls:
-        num += 1
-        if hint in lyr.keys():
-            hint_box = """
-                    <tr>
-                    <td>
-                    <input type="checkbox" id="handle{num}" />
-                    <label for="handle{num}">
-                    Title
-                    </label>
-    
-                  <div class="content">
-                    <p> '{hint}: {h_val}</p>
-                  </div>
-                  </td>
-                  </tr>""".format(num=num, hint=hint, h_val=lyr[hint])
-            hint_tot += ' \n' + hint_box
-    return hint_tot
+# Email Output
+class SendEmail:
+    def __init__(self, sub_lyr, s_info, file_attach=''):
+        self.sub_lyr = sub_lyr
+        self.s_info = s_info
 
+        self.file = file_attach
 
-def email(sub_lyr, s_info):
-    # Email Output
-    # Google location
-    host_server = "smtp.gmail.com"
-    port = 465
-    msg = MIMEMultipart('alternative')
-    # what to send
-    msg['From'] = usr
-    msg['To'] = ', '.join(receivers)  # to get string
-    msg['Subject'] = 'Lyrics'
+        # Google location
+        self.host_server = "smtp.gmail.com"
+        self.port = 465
+        self.msg = MIMEMultipart('alternative')
+        self.num = 0
 
-    # get html
-    message_con = "Lyrics:\n {}".format(sub_lyr)  # if format won't load
+        # what to send
+        self.msg['From'] = usr
+        self.msg['To'] = ', '.join(self.receivers)  # to get string
+        self.hint_ls = ['Album', 'Rank', 'Genre']
 
-    msg.attach(MIMEText(message_con, 'plain'))
-    print('opening html')
-    try:
-        with open('LyEmail.html', 'r') as h_file:
-            # replaces items so html works on qwn, but can format
-            html = h_file.read().replace('{', '{{').replace('}', '}}').replace('%#', '{').replace('#%', '}')
-            html = html.replace('<!--{', '{').replace('}-->', '}')
-        num = html.count('handle')  # counts instances already
+        if len(self.file) > 0:  # if to send file, will send to first inbox else run normal
+            self.attach_email()
+            self.receivers = receivers[0]
 
-        h_ls = ['Album', 'Rank', 'Genre']
-        html_ex = hints(s_info, h_ls, num)
-        form_html = html.format(lyrics=sub_lyr, title=s_info['Title'], artist=s_info['Artist'],
-                                full_lyrics=s_info['Lyrics'], extra_info=html_ex)
+        else:
+            self.receivers = receivers
+            self.html()
+        self.email_base()
 
-        msg.attach(MIMEText(form_html, 'html'))
+    def hints(self):  # adds to lyrics so hint can be displayed
+        hint_tot = """"""
 
-    except FileNotFoundError as e:
-        print('Error Loading HTML: ', e)
-    except KeyError as e:
-        print('Error Formatting HTML: ', e)
+        for hint in self.hint_ls:
+            self.num += 1
+            if hint in self.s_info.keys():
+                hint_box = """
+                        <tr>
+                        <td>
+                        <input type="checkbox" id="handle{num}" />
+                        <label for="handle{num}">
+                        {hint}
+                        </label>
 
-    # add csv on monday
-    if weekday == 0:
+                      <div class="content">
+                        <p> {hint}: {h_val}</p>
+                      </div>
+                      </td>
+                      </tr>""".format(num=self.num, hint=hint, h_val=self.s_info[hint])
+                hint_tot += ' \n' + hint_box
+        return hint_tot
+
+    def attach_email(self):  # adds attachments to email if needed
+        self.msg['Subject'] = 'Lyrics Data Attachment'
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload(open(self.file, 'rb').read())
+
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', 'attachment', filename=self.file)
+        self.msg.attach(part)
+
+    def html(self):  # formats the message
+        self.msg['Subject'] = 'Lyrics'
+        message_con = "Lyrics:\n {}".format(self.sub_lyr)  # if format won't load
+
+        self.msg.attach(MIMEText(message_con, 'plain'))
+        print('opening html')
         try:
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(open('Time Songs.csv', 'rb').read())
+            with open('LyEmail.html', 'r') as h_file:
+                # replaces items so html works on qwn, but can format
+                html = h_file.read().replace('{', '{{').replace('}', '}}').replace('%#', '{').replace('#%', '}')
+                html = html.replace('<!--{', '{').replace('}-->', '}')
+            self.num = html.count('handle')  # counts instances already
 
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment', filename='Time Songs.csv')
-            msg.attach(part)
+            html_ex = self.hints()
+            form_html = html.format(lyrics=self.sub_lyr, title=self.s_info['Title'], artist=self.s_info['Artist'],
+                                    full_lyrics=self.s_info['Lyrics'], extra_info=html_ex)
 
-        except FileNotFoundError:
-            print('Time Songs not found')
+            self.msg.attach(MIMEText(form_html, 'html'))
+        except KeyError as e:
+            print('Error Formatting HTML: ', e)
 
-    ctx = ssl.create_default_context()
-    print('Sending Email')
+    def email_base(self):  # sends message
 
-    with smtplib.SMTP_SSL(host_server, port, context=ctx) as server:
-        server.login(usr, password)
+        ctx = ssl.create_default_context()
+        print('Sending Email')
 
-        for receiver in receivers:
-            e_time = datetime.now()
-            server.sendmail(usr, receiver, msg.as_string())
-            print('Time for Email: {}, {}'.format(receiver, datetime.now() - e_time))
+        with smtplib.SMTP_SSL(self.host_server, self.port, context=ctx) as server:
+            server.login(usr, password)
+
+            for receiver in self.receivers:
+                e_time = datetime.now()
+                server.sendmail(usr, receiver, self.msg.as_string())
+                print('Time for Email: {}, {}'.format(receiver, datetime.now() - e_time))
 
 
 rand_art = random.choice(artist_ls)  # index columns so dict is correct
@@ -250,7 +269,7 @@ else:
     rand_out = search_csv(artist_ls)
 
 sub_lines = random_sub_song(rand_out)  # gets sub_lyrics
-email(sub_lines, rand_out)
+SendEmail(sub_lines, rand_out)
 tot_time = datetime.now() - start_time
 
 try:
