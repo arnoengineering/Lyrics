@@ -12,7 +12,7 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from GrabLyr import soup_lyrics
 import re
-# import logging
+import logging
 
 # todo
 """
@@ -26,6 +26,10 @@ filename = ''
 # save dir
 os.chdir(os.path.dirname(sys.argv[0]))
 path = os.getcwd()
+
+# logging
+log_name = 'log.log'
+logging.basicConfig(filename=log_name, level=logging.INFO)
 
 # tokens
 with open('pass.txt', 'r') as f:
@@ -80,17 +84,21 @@ def random_song(art, csv=True):  # returns song with tile artist and lyrics
         print('Random Song: ', song['Title'])
         return song  # returns dict of song
     except (KeyError, FileNotFoundError) as e:
-        print('Error reading {} file; Error: {}'.format(art, e))
+        er_str = 'Error reading {} file; Error: {}'.format(art, e)
+        print(er_str)
+        logging.error(er_str)
         raise Exception
 
 
 def random_sub_song(song):  # grabs lines in song
-    try:  # {'Ti': t, 'lyr', artist}
+    try:
         max_lines = 5  # max length of lines to send
         lines = re.sub(song['Title'], '***', song['Lyrics'], flags=re.IGNORECASE).splitlines()
     except KeyError:
-        print('Error getting sub-lyrics from: ', song['Title'])
-        pass
+        er_str = 'Error getting sub-lyrics from: ', song['Title']
+        print(er_str)
+        logging.error(er_str)
+
     else:
         # lines are range, thus if les than max, send all
         if len(lines) <= max_lines:
@@ -114,11 +122,20 @@ def rand_song_lyrics():  # runs module to scrape soup
 
     try:  # adds extra info for random songs
         artist_dict['Genre'],  artist_dict['Rank'] = song['name'], song['rank']
-    except KeyError:
-        print('Error loading extra hints: Soup')
+    except Exception as e:
+        print(e)
+        logging.error(e)
+        raise KeyError(e)
 
     print('Random Song: ', artist_dict['Title'])
     return artist_dict
+
+
+def log_clear():  # sends mail with logfile, then removes it
+    if os.path.exists(log_name):
+        SendEmail('', '', log_name)
+        with open('log.log', 'w') as log:
+            log.truncate(0)
 
 
 def grab_artist(art, ret=False):
@@ -172,7 +189,6 @@ class SendEmail:
 
         # what to send
         self.msg['From'] = usr
-        self.msg['To'] = ', '.join(self.receivers)  # to get string
         self.hint_ls = ['Album', 'Rank', 'Genre']
 
         if len(self.file) > 0:  # if to send file, will send to first inbox else run normal
@@ -182,6 +198,7 @@ class SendEmail:
         else:
             self.receivers = receivers
             self.html()
+        self.msg['To'] = ', '.join(self.receivers)  # to get string
         self.email_base()
 
     def hints(self):  # adds to lyrics so hint can be displayed
@@ -252,6 +269,8 @@ class SendEmail:
 
 rand_art = random.choice(artist_ls)  # index columns so dict is correct
 if weekday == 6:
+    SendEmail('', '', 'Time Songs.csv')  # runs csv email
+    log_clear()  # runs log email
     try:
         rand_out = rand_song_lyrics()  # runs module to check songs, then gets sub song
     except KeyError as er:
