@@ -5,7 +5,9 @@ import ssl
 from lyricsgenius import Genius
 import os
 import pandas as pd
+from email import encoders
 from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from GrabLyr import soup_lyrics
 import re
@@ -169,7 +171,7 @@ def hints(lyr, hint_ls, num):  # adds to lyrics so hint can be displayed
     return hint_tot
 
 
-def email(sub_lyr, s_info):  # todo add hints in header, check album
+def email(sub_lyr, s_info):
     # Email Output
     # Google location
     host_server = "smtp.gmail.com"
@@ -178,7 +180,7 @@ def email(sub_lyr, s_info):  # todo add hints in header, check album
     # what to send
     msg['From'] = usr
     msg['To'] = ', '.join(receivers)  # to get string
-    msg['Subject'] = 'Lyrics '
+    msg['Subject'] = 'Lyrics'
 
     # get html
     message_con = "Lyrics:\n {}".format(sub_lyr)  # if format won't load
@@ -203,6 +205,19 @@ def email(sub_lyr, s_info):  # todo add hints in header, check album
         print('Error Loading HTML: ', e)
     except KeyError as e:
         print('Error Formatting HTML: ', e)
+
+    # add csv on monday
+    if weekday == 0:
+        try:
+            part = MIMEBase('application', 'octet-stream')
+            part.set_payload(open('Time Songs.csv', 'rb').read())
+
+            encoders.encode_base64(part)
+            part.add_header('Content-Disposition', 'attachment', filename='Time Songs.csv')
+            msg.attach(part)
+
+        except FileNotFoundError:
+            print('Time Songs not found')
 
     ctx = ssl.create_default_context()
     print('Sending Email')

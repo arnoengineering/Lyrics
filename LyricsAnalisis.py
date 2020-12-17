@@ -1,3 +1,4 @@
+import sys
 from datetime import date, datetime
 from lyricsgenius import Genius
 import os
@@ -6,6 +7,7 @@ import matplotlib.pyplot as plt
 
 
 # save dir
+os.chdir(os.path.dirname(sys.argv[0]))
 path = os.getcwd()
 
 # tokens
@@ -127,3 +129,7 @@ def plot_songs(album):  #
 
     plt.figure(2)
     plt.bar(list(songs.keys()), list(songs.values()))
+
+
+def stats_alb():
+    pass
