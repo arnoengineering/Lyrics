@@ -1,18 +1,22 @@
 import smtplib
 import random
+import logging
 import sys
-from datetime import date, datetime
-import ssl
-from lyricsgenius import Genius
 import os
-import pandas as pd
+import re
+
+# email
+import ssl
 from email import encoders
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
+
+# Pandas
+import pandas as pd
 from GrabLyr import soup_lyrics
-import re
-import logging
+from datetime import date, datetime
+from lyricsgenius import Genius
 
 # todo add different years
 
@@ -37,8 +41,11 @@ genius = Genius(token, timeout=10)
 start_time = datetime.now()
 day = date.today()
 weekday = day.weekday()
+
 year = start_time.year  # so gets correct chart
-tot_songs = 0
+years_80 = list(range(1980, 1990))
+years = list(range(year - 5, year + 1))
+year_range = [years_80, years]
 
 # genius formatting
 genius.remove_section_headers = True
@@ -49,6 +56,7 @@ file_pre = ' Songs.csv'
 # list of artist to search
 artist_ls = ["Skillet", "LEDGER", "Icon for Hire", "Lacey Sturm"]
 time_dict = {}  # initial dict to save info about artists
+tot_songs = 0
 
 
 def collect_song_data(art_dic, artist_dict):  # maybe add more info
@@ -105,7 +113,7 @@ def random_sub_song(song):  # grabs lines in song
 def rand_song_lyrics():  # runs module to scrape soup
     artist_dict = {}
     soup_st = datetime.now()
-    song = soup_lyrics(year)  # gets random song per chart
+    song = soup_lyrics(year_range)  # gets random song per chart
     soup_time = datetime.now()
     soup_song = genius.search_song(song['song'], song['artist'], get_full_info=False)
 
@@ -114,7 +122,7 @@ def rand_song_lyrics():  # runs module to scrape soup
     artist_dict = artist_dict[soup_song.title]  # could use song, but want to avoid err
 
     try:  # adds extra info for random songs
-        artist_dict['Genre'],  artist_dict['Rank'] = song['name'], song['rank']
+        artist_dict['Genre'],  artist_dict['Rank'], artist_dict['Year'] = song['name'], song['rank'], song['year']
     except Exception as e:
         print(e)
         logging.error(e)

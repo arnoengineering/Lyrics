@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 
-def soup_lyrics(year):
+def soup_lyrics(years):
 
     def get_chart_entries(url):
         """
@@ -35,10 +35,13 @@ def soup_lyrics(year):
               {'name': 'Christian', 'urlTag': 'hot-christian-songs'}]
 
     rand_chart = random.choice(charts)
-
+    if type(years) == list:
+        year = random.choice(years)
+    else:
+        year = years
     rand_chart['url'] = ("https://www.billboard.com/charts/year-end/" + str(year) + '/' + rand_chart['urlTag'])
 
     rand_chart['entries'] = get_chart_entries(rand_chart['url'])
     rand_song = random.choice(rand_chart['entries'])
-
+    rand_song['year'] = year
     return rand_song
