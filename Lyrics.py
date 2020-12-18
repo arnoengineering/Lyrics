@@ -18,8 +18,6 @@ from GrabLyr import soup_lyrics
 from datetime import date, datetime
 from lyricsgenius import Genius
 
-# todo add different years
-
 # save dir
 os.chdir(os.path.dirname(sys.argv[0]))
 path = os.getcwd()
