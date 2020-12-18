@@ -14,14 +14,7 @@ from GrabLyr import soup_lyrics
 import re
 import logging
 
-# todo
-"""
-todo add different years
-return e when error
-email both at once 
-logging
-filename = ''
-"""
+# todo add different years
 
 # save dir
 os.chdir(os.path.dirname(sys.argv[0]))
