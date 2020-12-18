@@ -40,7 +40,7 @@ class ReadSong:
         self.time = datetime.now()
         self.artist = artist
         self.artist_dict = {}
-        self.file_n = artist + ' Songs.csv'  # todo fix for loop
+        self.file_n = artist + ' Songs.csv'
 
     def collect_song_data(self, art_dic):
         dps = []
@@ -73,7 +73,7 @@ class ReadSong:
             self.search_art()
             self.write_csv()
 
-        else:  # todo change if not read first
+        else:
             artist_c = pd.read_csv(self.artist, index_col=0)  # reads jason of rand artist
             self.artist_dict = artist_c.to_dict(orient='index')  # will save dict of values
 
