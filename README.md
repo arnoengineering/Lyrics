@@ -14,12 +14,12 @@ pip install lyricsgenius
 ```
 
 ### Requied End-User Edits
-- **Google api: **
+- **Google api:**
 To send the email, I used the *smtplib* module with google api. Thus, the sending email works better with 2 factor authentcation (and an api key).
 [Create App Key](https://support.google.com/accounts/answer/185833?hl=en&authuser=0)
-- **UserInfo: **
+- **UserInfo:**
 copy file: remove'.example' from file name and replace all non comments with your respective usernames and passwords. The email pasword is the api *app password* in the above step.
-- **Artists: **
+- **Artists:**
 Replce the list of artis in *Lyrics.py* to the list of artists you want to be searched
 
 ### References
