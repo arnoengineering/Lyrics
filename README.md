@@ -66,5 +66,5 @@ I have this running on cron so it emails every morning
 Example cron Entry:
 ```
 # For Lyrics.py
-30 7 * * * /path_to_annaconda_python/path_to_dir/Lyrics.py
+30 7 * * * /path_to_annaconda_python /path_to_dir/Lyrics.py
 ```
