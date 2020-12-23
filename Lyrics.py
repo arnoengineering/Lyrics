@@ -57,6 +57,7 @@ csv_f = 'Time' + file_pre
 artist_ls = ["Skillet", "LEDGER", "Icon for Hire", "Lacey Sturm"]
 time_dict = {}  # initial dict to save info about artists
 tot_songs = 0
+files = [csv_f]  # list top send
 
 
 def collect_song_data(art_dic, artist_dict):  # maybe add more info
@@ -134,9 +135,15 @@ def rand_song_lyrics():  # runs module to scrape soup
 
 def log_clear():  # sends mail with logfile, then removes it
     if os.path.exists(log_name):
-        SendEmail(file_attach=log_name)
+        with open(log_name, 'r') as log:
+            lines = len(log.readlines())
+        if lines > 0:
+            files.append(log_name)
+        SendEmail(file_attach=files)
         with open(log_name, 'w') as log:
             log.truncate(0)
+    else:
+        SendEmail(file_attach=files)
 
 
 def grab_artist(art, ret=False):
@@ -176,13 +183,15 @@ def search_csv(art_li):
 
 # Email Output
 class SendEmail:
-    def __init__(self, sub_lyr='', s_info=None, file_attach=''):
-        if s_info is None:
-            s_info = {}
+    def __init__(self, sub_lyr='', info=None, file_attach=None):
+        if file_attach is None:
+            file_attach = []
+        if info is None:
+            info = {}
         self.sub_lyr = sub_lyr
-        self.s_info = s_info
+        self.s_info = info
 
-        self.file = file_attach
+        self.files = file_attach
 
         # Google location
         self.host_server = "smtp.gmail.com"
@@ -194,7 +203,7 @@ class SendEmail:
         self.msg['From'] = usr
         self.hint_ls = ['Album', 'Rank', 'Genre']
 
-        if len(self.file) > 0:  # if to send file, will send to first inbox else run normal
+        if len(self.files) > 0:  # if to send file, will send to first inbox else run normal
             self.attach_email()
             self.receivers = [receivers[0]]
 
@@ -227,14 +236,15 @@ class SendEmail:
         return hint_tot
 
     def attach_email(self):  # adds attachments to email if needed
-        if os.path.exists(self.file):
-            self.msg['Subject'] = 'Lyrics Data Attachment'
-            part = MIMEBase('application', 'octet-stream')
-            part.set_payload(open(self.file, 'rb').read())
+        for fi in self.files:
+            if os.path.exists(fi):
+                self.msg['Subject'] = 'Lyrics Data Attachment'
+                part = MIMEBase('application', 'octet-stream')
+                part.set_payload(open(fi, 'rb').read())
 
-            encoders.encode_base64(part)
-            part.add_header('Content-Disposition', 'attachment', filename=self.file)
-            self.msg.attach(part)
+                encoders.encode_base64(part)
+                part.add_header('Content-Disposition', 'attachment', filename=fi)
+                self.msg.attach(part)
 
     def html(self):  # formats the message
         self.msg['Subject'] = 'Lyrics'
@@ -273,7 +283,6 @@ class SendEmail:
 
 rand_art = random.choice(artist_ls)  # index columns so dict is correct
 if weekday == 6:
-    SendEmail(file_attach=csv_f)  # runs csv email
     log_clear()  # runs log email
     try:
         rand_out = rand_song_lyrics()  # runs module to check songs, then gets sub song
@@ -288,8 +297,7 @@ if weekday == 6:
     for artists in artist_ls:
         if artists != rand_art:
             grab_artist(artists)
-else:
-    SendEmail(file_attach=csv_f)  # runs csv email
+else:  # todo rem after test
     log_clear()
     rand_out = search_csv(artist_ls)
 
