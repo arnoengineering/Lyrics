@@ -4,6 +4,7 @@ from lyricsgenius import Genius
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import scipy
 
 
 # save dir
@@ -131,5 +132,7 @@ def plot_songs(album):  #
     plt.bar(list(songs.keys()), list(songs.values()))
 
 
-def stats_alb():
+def stats_alb(ls):
+    mode = scipy.stats.mode(ls)
+    sd = numpy.std(ls)
     pass
