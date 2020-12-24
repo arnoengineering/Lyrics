@@ -1,5 +1,7 @@
 import sys
 from datetime import date, datetime
+
+import numpy
 from lyricsgenius import Genius
 import os
 import pandas as pd
@@ -85,26 +87,29 @@ class ReadSong:
         print("{} took {} seconds".format(self.artist, datetime.now() - self.time))  # how long per artist
 
 
+def song_2_alb(artist):
+    ls = []
+    a_dict = {song['Album']: {'Songs': ls.append({'Title': song['Title'], 'Lyrics': song['Lyrics']})}
+              for song in artist.values()}
+    return a_dict
+
+
 def count_inst(song, phrase):
     cnt = song['Lyrics'].count(phrase)
     song['Count'] = cnt
 
 
 def save_me(artist):
-    cnt = 0
-    total_cnt = 0
+    for alb in artist.keys():
+        songs = alb['Songs']
+        for song in songs:
+            count_inst(song, 'Save Me')
+        cnt = sum(songs[:]['Count'])
+        alb['Total'] = cnt
+        alb['Song Count'] = len(songs)
+        alb['Ave'] = cnt / len(songs)
 
-    for song in artist:
-        count_inst(song, 'Save Me')
-        alb = song['Album']
-        album_ls[alb][song['Title']] = song['Count']
-    for alb in album_ls:
-        cnt = sum(album_ls[alb].values())
-        album_ls[alb]['Total'] = cnt
-        album_ls[alb]['Song Count'] = len(artist)
-        album_ls[alb]['Ave'] = cnt / len(artist)
-
-    total_cnt += cnt
+    total_cnt = sum(artist[:]['Total'])
     album_ls['Total'] = total_cnt
 
 
