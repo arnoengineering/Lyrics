@@ -6,7 +6,7 @@ from lyricsgenius import Genius
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
-import scipy
+from scipy import stats
 
 
 # save dir
@@ -97,47 +97,46 @@ def song_2_alb(artist):
 def count_inst(song, phrase):
     cnt = song['Lyrics'].count(phrase)
     song['Count'] = cnt
+    del song['Lyrics']
 
 
 def save_me(artist):
-    for alb in artist.keys():
+    for num, alb in enumerate(artist.keys()):
         songs = alb['Songs']
         for song in songs:
             count_inst(song, 'Save Me')
-        cnt = sum(songs[:]['Count'])
-        alb['Total'] = cnt
+
+        cnt_ls = [x['Count'] for x in songs.keys()]
+
+        alb['Total'] = sum(cnt_ls)
         alb['Song Count'] = len(songs)
-        alb['Ave'] = cnt / len(songs)
+        alb['Ave'] = sum(cnt_ls) / len(songs)
+        alb['Mode'], alb['Sd'], alb['St Er'] = stats_alb(cnt_ls)
 
-    total_cnt = sum(artist[:]['Total'])
-    album_ls['Total'] = total_cnt
+        plot_songs(songs, num + 2)
+
+    total_cnt = [x['Total'] for x in artist.keys()]
+    plot_artist(artist)
+
+    artist['Total'] = sum(total_cnt)
+    artist['Ave'] = numpy.average(total_cnt)
+    artist['Mode'], artist['Sd'], artist['Se'] = stats_alb(total_cnt)
 
 
-def plot_artist(artist):
-    cnt_ls = {'Totals': [], 'Song Count': [], 'Ave': []}
-
-    for alb in artist.keys():  # creates lists that are able to be ploted
-        cnt_ls['Totals'].append(artist[alb]['Total'])
-        cnt_ls['Song Count'].append(artist[alb]['Song Count'])
-        cnt_ls['Ave'].append(artist[alb]['Ave'])
-
+def plot_artist(artist):  # if not[:] [x[tot] for x in art]
     plt.figure(1)
-    plt.subplot(311).bar(list(artist.keys()), cnt_ls['Totals'])  # lists to plot
-    plt.subplot(312).bar(list(artist.keys()), cnt_ls['Ave'])  # lists to plot
-    plt.subplot(313).bar(list(artist.keys()), cnt_ls['Song Count'])
+    plt.subplot(311).bar(list(artist.keys()), [x['Total'] for x in artist.keys()])  # lists to plot
+    plt.subplot(312).bar(list(artist.keys()), [x['Ave'] for x in artist.keys()])  # lists to plot
+    plt.subplot(313).bar(list(artist.keys()), [x['Song count'] for x in artist.keys()])
 
 
-def plot_songs(album):  #
-    songs = {}
-    for song in album.keys():
-        if song != 'Total' and song != 'Song Count' and song != 'Ave':
-            songs[song['Title']] = song['Count']
-
-    plt.figure(2)
+def plot_songs(songs, fig):  #
+    plt.figure(fig)
     plt.bar(list(songs.keys()), list(songs.values()))
 
 
 def stats_alb(ls):
-    mode = scipy.stats.mode(ls)
+    mode = stats.mode(ls)
     sd = numpy.std(ls)
-    pass
+    sem = stats.sem(ls)
+    return mode, sd, sem
