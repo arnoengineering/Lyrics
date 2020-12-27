@@ -236,15 +236,21 @@ class SendEmail:
         return hint_tot
 
     def attach_email(self):  # adds attachments to email if needed
+        self.msg['Subject'] = 'Lyrics Data Attachment'
+        message_con = 'Lyrics Data Attachment\n'
         for fi in self.files:
-            if os.path.exists(fi):
-                self.msg['Subject'] = 'Lyrics Data Attachment'
+            fi_path = os.path.join(path, fi)
+
+            if os.path.exists(fi_path):
                 part = MIMEBase('application', 'octet-stream')
                 part.set_payload(open(fi, 'rb').read())
 
                 encoders.encode_base64(part)
                 part.add_header('Content-Disposition', 'attachment', filename=fi)
                 self.msg.attach(part)
+            else:
+                message_con += f'Error finding: {fi}\n'
+            self.msg.attach(MIMEText(message_con, 'plain'))
 
     def html(self):  # formats the message
         self.msg['Subject'] = 'Lyrics'
