@@ -66,7 +66,7 @@ def collect_song_data(art_dic, artist_dict):  # maybe add more info
     lyrics = art_dic.lyrics  # song lyrics
     album = art_dic.album
 
-    # assign list to song dictionary entry named after song title # todo fix so title?
+    # assign list to song dictionary entry named after song title
     artist_dict[title] = {'Title': title, 'Artist': art, 'Lyrics': lyrics, 'Album': album}
 
 
