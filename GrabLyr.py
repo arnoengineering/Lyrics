@@ -44,4 +44,5 @@ def soup_lyrics(years):
     rand_chart['entries'] = get_chart_entries(rand_chart['url'])
     rand_song = random.choice(rand_chart['entries'])
     rand_song['year'] = year
+    rand_song['genre'] = rand_chart['name']
     return rand_song

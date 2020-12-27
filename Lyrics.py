@@ -44,7 +44,7 @@ weekday = day.weekday()
 year = start_time.year  # so gets correct chart
 years_80 = list(range(1980, 1990))
 years = list(range(year - 5, year + 1))
-year_range = [years_80, years]
+year_range = years_80 + years
 
 # genius formatting
 genius.remove_section_headers = True
@@ -123,7 +123,7 @@ def rand_song_lyrics():  # runs module to scrape soup
     artist_dict = artist_dict[soup_song.title]  # could use song, but want to avoid err
 
     try:  # adds extra info for random songs
-        artist_dict['Genre'],  artist_dict['Rank'], artist_dict['Year'] = song['name'], song['rank'], song['year']
+        artist_dict['Genre'], artist_dict['Rank'], artist_dict['Year'] = song['genre'], song['rank'], song['year']
     except Exception as e:
         print(e)
         logging.error(e)
@@ -134,7 +134,7 @@ def rand_song_lyrics():  # runs module to scrape soup
 
 
 def log_clear():  # sends mail with logfile, then removes it
-    if os.path.exists(log_name):
+    if os.path.exists(os.path.join(path, log_name)):
         with open(log_name, 'r') as log:
             lines = len(log.readlines())
         if lines > 0:
@@ -259,7 +259,7 @@ class SendEmail:
         self.msg.attach(MIMEText(message_con, 'plain'))
         print('opening html')
         try:
-            with open('LyEmail.html', 'r') as h_file:
+            with open('LyrEmail.html', 'r') as h_file:
                 # replaces items so html works on qwn, but can format
                 html = h_file.read().replace('{', '{{').replace('}', '}}').replace('%#', '{').replace('#%', '}')
                 html = html.replace('<!--{', '{').replace('}-->', '}')
@@ -270,7 +270,7 @@ class SendEmail:
                                     full_lyrics=self.s_info['Lyrics'], extra_info=html_ex)
 
             self.msg.attach(MIMEText(form_html, 'html'))
-        except KeyError as e:
+        except (KeyError, FileNotFoundError) as e:
             print('Error Formatting HTML: ', e)
 
     def email_base(self):  # sends message
@@ -303,8 +303,7 @@ if weekday == 6:
     for artists in artist_ls:
         if artists != rand_art:
             grab_artist(artists)
-else:  # todo rem after test
-    log_clear()
+else:
     rand_out = search_csv(artist_ls)
 
 sub_lines = random_sub_song(rand_out)  # gets sub_lyrics
