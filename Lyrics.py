@@ -13,9 +13,9 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 
 # Pandas
-import pandas as pd
+import GrabArtist
 from GrabLyr import soup_lyrics
-from GrabArtist import ReadSong
+from GrabArtist import ReadArtist
 from datetime import date, datetime
 
 # save dir
@@ -86,16 +86,14 @@ def random_sub_song(song):  # grabs lines in song
         return sub_line
 
 
-def rand_song_lyrics():  # runs module to scrape soup, # todo fix genius, csv, get data
-    artist_dict = {}
+def rand_song_lyrics():  # runs module to scrape soup, # todo soup song
     soup_st = datetime.now()
     song = soup_lyrics(year_range)  # gets random song per chart
     soup_time = datetime.now()
-    soup_song = genius.search_song(song['song'], song['artist'], get_full_info=False)
+    artist_dict = GrabArtist.genius_find(song['song'], song['artist'])
 
     print('Got Billboard Song in: {}, Genies search in: {}'.format(soup_time - soup_st, datetime.now() - soup_time))
-    # collect_song_data(soup_song, artist_dict)
-    artist_dict = artist_dict[soup_song.title]  # could use song, but want to avoid err
+    artist_dict = artist_dict[song['song']]  # could use song, but want to avoid err
 
     try:  # adds extra info for random songs
         artist_dict['Genre'], artist_dict['Rank'], artist_dict['Year'] = song['genre'], song['rank'], song['year']
@@ -141,7 +139,7 @@ class SendEmail:
 
         # what to send
         self.msg['From'] = usr
-        self.hint_ls = ['Album', 'Rank', 'Genre']
+        self.hint_ls = ['Album', 'Rank', 'Genre', 'Year']
 
         if len(self.files) > 0:  # if to send file, will send to first inbox else run normal
             self.attach_email()
@@ -228,9 +226,13 @@ class SendEmail:
 
 
 def loop_artists(do_all=False):
-    a_dict = {}
+    a_dict = {}  # returns dict at end only if required
     for art in artist_ls:
-        a = ReadSong(art, do_all)
+        a = ReadArtist(art)
+        if do_all:
+            a.search_art()
+        else:
+            a.test_csv()
         if art == rand_art:
             a_dict = a.artist_dict
     return a_dict
@@ -263,8 +265,8 @@ except ZeroDivisionError:
     tps = 0
 time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
 if tot_songs > 0:
-    df = pd.DataFrame.from_dict(time_dict, orient='index')
-    df.to_csv('Time' + file_pre, header=True, index=True)
+    t_obj = ReadArtist('Time')
+    t_obj.write_csv()
 
 print("Total time:",  tot_time)
 print("{} Songs, at: {} per song".format(tot_songs, tps))

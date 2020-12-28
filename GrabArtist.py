@@ -24,34 +24,30 @@ genius.skip_non_songs = True
 genius.excluded_terms = ["(Remix)"]
 
 
-class ReadSong:
-    def __init__(self, artist, do_all=False):
+def genius_find(title, artist):
+    gen_obj = genius.search_song(title, artist, get_full_info=False)
+    gen = ReadArtist(artist)
+    gen.collect_song_data(gen_obj)
+    return gen.artist_dict
+
+
+class ReadArtist:
+    def __init__(self, artist):
         self.time = datetime.now()
         self.artist = artist
         self.artist_dict = {}
         self.file_n = artist + ' Songs.csv'
 
-        if do_all:
-            self.search_art()
-        else:
-            self.test_csv()
+    def collect_song_data(self, song_dic):  # todo spotify, list, album
+        title = song_dic.title  # song title
+        art = song_dic.artist
+        lyrics = song_dic.lyrics  # song lyrics
+        album = song_dic.album
+        # year = song_dic.year  # release date
 
-    def collect_song_data(self, art_dic):
-        dps = []
-        title = art_dic['title']  # song title
-        url = art_dic['raw']['url']  # spotify url
-        art = art_dic['artist']  # artist name(sub_lines)
-        song_id = art_dic['raw']['id']  # spotify id
-        lyrics = art_dic['lyrics']  # song lyrics
-        year = art_dic['year']  # release date
-        upload_date = art_dic['raw']['description_annotation']['annotatable']['client_timestamps'][
-            'lyrics_updated_at']  # lyrics upload date
-        annotations = art_dic['raw']['annotation_count']  # total no. of annotations
-        desc = art_dic['raw']['description']  # song descriptions
-
-        dps.append(
-            (title, url, art, song_id, lyrics, year, upload_date, annotations, desc))  # append all to one tuple list
-        self.artist_dict[title] = dps  # assign list to song dictionary entry named after song title
+        # assign list to song dictionary entry named after song title
+        self.artist_dict[title] = {'Title': title, 'Artist': art, 'Lyrics': lyrics, 'Album': album}
+        # if album ==x:
 
     def search_art(self):
         art_obj = genius.search_artist(self.artist)  # max songs for debug
@@ -75,4 +71,3 @@ class ReadSong:
         else:
             artist_c = pd.read_csv(self.artist, index_col=0)  # reads jason of rand artist
             self.artist_dict = artist_c.to_dict(orient='index')  # will save dict of values
-
