@@ -15,8 +15,8 @@ from email.mime.multipart import MIMEMultipart
 # Pandas
 import pandas as pd
 from GrabLyr import soup_lyrics
+from GrabArtist import ReadSong
 from datetime import date, datetime
-from lyricsgenius import Genius
 
 # save dir
 os.chdir(os.path.dirname(sys.argv[0]))
@@ -34,7 +34,6 @@ with open('pass.txt', 'r') as f:
     usr = file[3].strip()
     password = file[5].strip()
     receivers = file[7].strip().split(',')  # list of all receivers
-genius = Genius(token, timeout=10)
 
 # sets day of week to run on sunday, and timing
 start_time = datetime.now()
@@ -46,10 +45,6 @@ years_80 = list(range(1980, 1990))
 years = list(range(year - 5, year + 1))
 year_range = years_80 + years
 
-# genius formatting
-genius.remove_section_headers = True
-genius.skip_non_songs = True
-genius.excluded_terms = ["(Remix)"]
 file_pre = ' Songs.csv'
 csv_f = 'Time' + file_pre
 
@@ -58,37 +53,17 @@ artist_ls = ["Skillet", "LEDGER", "Icon for Hire", "Lacey Sturm"]
 time_dict = {}  # initial dict to save info about artists
 tot_songs = 0
 files = [csv_f]  # list top send
+rand_art = random.choice(artist_ls)  # index columns so dict is correct
 
 
-def collect_song_data(art_dic, artist_dict):  # maybe add more info
-    title = art_dic.title  # song title
-    art = art_dic.artist
-    lyrics = art_dic.lyrics  # song lyrics
-    album = art_dic.album
-
-    # assign list to song dictionary entry named after song title
-    artist_dict[title] = {'Title': title, 'Artist': art, 'Lyrics': lyrics, 'Album': album}
-
-
-def write_csv(art, art_dic):  # writes all songs for an artist
-    df = pd.DataFrame.from_dict(art_dic, orient='index')
-    df.to_csv(art + file_pre, header=True, index=True)
-
-
-def random_song(art, csv=True):  # returns song with tile artist and lyrics
+def random_song(artist):  # returns song with tile artist and lyrics
     try:
-        if csv:
-            artist_c = pd.read_csv(art + file_pre, index_col=0)  # reads jason of rand artist
-            artist = artist_c.to_dict(orient='index')
-        else:
-            artist = art
         song = random.choice(list(artist.values()))
         print('Random Song: ', song['Title'])
         return song  # returns dict of song
-    except (KeyError, FileNotFoundError) as e:
-        er_str = 'Error reading {} file; Error: {}'.format(art, e)
-        print(er_str)
-        logging.error(er_str)
+    except KeyError as e:
+        print(e)
+        logging.error(e)
         raise Exception
 
 
@@ -111,7 +86,7 @@ def random_sub_song(song):  # grabs lines in song
         return sub_line
 
 
-def rand_song_lyrics():  # runs module to scrape soup
+def rand_song_lyrics():  # runs module to scrape soup, # todo fix genius, csv, get data
     artist_dict = {}
     soup_st = datetime.now()
     song = soup_lyrics(year_range)  # gets random song per chart
@@ -119,7 +94,7 @@ def rand_song_lyrics():  # runs module to scrape soup
     soup_song = genius.search_song(song['song'], song['artist'], get_full_info=False)
 
     print('Got Billboard Song in: {}, Genies search in: {}'.format(soup_time - soup_st, datetime.now() - soup_time))
-    collect_song_data(soup_song, artist_dict)
+    # collect_song_data(soup_song, artist_dict)
     artist_dict = artist_dict[soup_song.title]  # could use song, but want to avoid err
 
     try:  # adds extra info for random songs
@@ -144,41 +119,6 @@ def log_clear():  # sends mail with logfile, then removes it
             log.truncate(0)
     else:
         SendEmail(file_attach=files)
-
-
-def grab_artist(art, ret=False):
-    # grabs songs from artist if update needed
-    global tot_songs
-    artist_dict = {}
-    r_time = datetime.now()
-    art_obj = genius.search_artist(art, get_full_info=True)  # max songs for debug
-
-    for songs in art_obj.songs:  # loops though for each song
-        collect_song_data(songs, artist_dict)
-
-    write_csv(art, artist_dict)
-    art_time = datetime.now() - r_time
-    per_song = art_time / len(artist_dict)
-    tot_songs += len(artist_dict)
-    print("{} took: {} seconds; {} songs at: {} per song".format(art, art_time, len(artist_dict), per_song))
-    time_dict[art] = {'Time': art_time, 'Songs': len(artist_dict), ' Time per Song': per_song}
-    if ret:
-        return artist_dict  # so don't have to read csv
-
-
-def search_csv(art_li):
-    # checks to see if csv exists or if update needed
-    if os.path.exists(rand_art + file_pre):  # for rand song if in dir
-        out_song = random_song(rand_art)
-    else:
-        art_dict = grab_artist(rand_art, ret=True)
-        out_song = random_song(art_dict, csv=False)
-
-    for art in art_li:  # loop though all see if in dir and not one before
-        a_file = art + file_pre
-        if not os.path.exists(a_file) and art != rand_art:
-            grab_artist(art)
-    return out_song
 
 
 # Email Output
@@ -287,7 +227,15 @@ class SendEmail:
                 print('Time for Email: {}, {}'.format(receiver, datetime.now() - e_time))
 
 
-rand_art = random.choice(artist_ls)  # index columns so dict is correct
+def loop_artists(do_all=False):
+    a_dict = {}
+    for art in artist_ls:
+        a = ReadSong(art, do_all)
+        if art == rand_art:
+            a_dict = a.artist_dict
+    return a_dict
+
+
 if weekday == 6:
     log_clear()  # runs log email
     try:
@@ -295,28 +243,28 @@ if weekday == 6:
     except KeyError as er:
         print('Error loading song, KeyError: ', er)
         fail = True
-        grab_artist(rand_art, ret=True)
-        rand_out = random_song(rand_art)
+        art_dict = loop_artists(True)
+        rand_out = random_song(art_dict)
     else:
-        grab_artist(rand_art)
+        loop_artists(True)
         # run to grab on sat
-    for artists in artist_ls:
-        if artists != rand_art:
-            grab_artist(artists)
 else:
-    rand_out = search_csv(artist_ls)
+    art_dict = loop_artists()
+    rand_out = random_song(art_dict)
 
 sub_lines = random_sub_song(rand_out)  # gets sub_lyrics
 SendEmail(sub_lines, rand_out)
 tot_time = datetime.now() - start_time
 
+tot_songs = sum([art['Songs'] for art in time_dict])
 try:
     tps = tot_time / tot_songs
 except ZeroDivisionError:
     tps = 0
 time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
 if tot_songs > 0:
-    write_csv('Time', time_dict)  # since index is run by dict and 'art' is name
+    df = pd.DataFrame.from_dict(time_dict, orient='index')
+    df.to_csv('Time' + file_pre, header=True, index=True)
 
 print("Total time:",  tot_time)
 print("{} Songs, at: {} per song".format(tot_songs, tps))
