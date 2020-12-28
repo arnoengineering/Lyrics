@@ -20,7 +20,7 @@ with open('pass.txt', 'r') as f:
     usr = file[3]
     password = file[5]
     receivers = file[7].split(',')  # list of all receivers
-genius = Genius(token)
+genius = Genius(token, timeout=10)
 
 # sets day of week to run on sunday, and timing
 start_time = datetime.now()
@@ -46,7 +46,7 @@ class ReadSong:
         self.file_n = artist + ' Songs.csv'
         self.csv = True
 
-        self.test_csv()
+        # self.test_csv()
 
     def collect_song_data(self, art_dic):
         dps = []
@@ -140,3 +140,7 @@ def stats_alb(ls):
     sd = numpy.std(ls)
     sem = stats.sem(ls)
     return mode, sd, sem
+
+
+sk = ReadSong('Skillet')
+sk.search_art()

@@ -38,16 +38,11 @@ class ReadArtist:
         self.artist_dict = {}
         self.file_n = artist + ' Songs.csv'
 
-    def collect_song_data(self, song_dic):  # todo spotify, list, album
-        title = song_dic.title  # song title
-        art = song_dic.artist
-        lyrics = song_dic.lyrics  # song lyrics
-        album = song_dic.album
-        # year = song_dic.year  # release date
+    def collect_song_data(self, song_obj):  # todo spotify
+        song_dict = song_obj.to_dict()
 
         # assign list to song dictionary entry named after song title
-        self.artist_dict[title] = {'Title': title, 'Artist': art, 'Lyrics': lyrics, 'Album': album}
-        # if album ==x:
+        self.artist_dict[song_dict['Title']] = song_dict
 
     def search_art(self):
         art_obj = genius.search_artist(self.artist)  # max songs for debug

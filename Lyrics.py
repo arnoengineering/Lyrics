@@ -86,17 +86,17 @@ def random_sub_song(song):  # grabs lines in song
         return sub_line
 
 
-def rand_song_lyrics():  # runs module to scrape soup, # todo soup song
+def rand_soup_lyrics():  # runs module to scrape soup,
     soup_st = datetime.now()
     song = soup_lyrics(year_range)  # gets random song per chart
     soup_time = datetime.now()
     artist_dict = GrabArtist.genius_find(song['song'], song['artist'])
 
     print('Got Billboard Song in: {}, Genies search in: {}'.format(soup_time - soup_st, datetime.now() - soup_time))
-    artist_dict = artist_dict[song['song']]  # could use song, but want to avoid err
+    artist_dict = artist_dict[song['song']]
 
     try:  # adds extra info for random songs
-        artist_dict['Genre'], artist_dict['Rank'], artist_dict['Year'] = song['genre'], song['rank'], song['year']
+        artist_dict['Genre'], artist_dict['Rank'] = song['genre'], song['rank']
     except Exception as e:
         print(e)
         logging.error(e)
@@ -241,7 +241,7 @@ def loop_artists(do_all=False):
 if weekday == 6:
     log_clear()  # runs log email
     try:
-        rand_out = rand_song_lyrics()  # runs module to check songs, then gets sub song
+        rand_out = rand_soup_lyrics()  # runs module to check songs, then gets sub song
     except KeyError as er:
         print('Error loading song, KeyError: ', er)
         fail = True
