@@ -28,7 +28,7 @@ class ReadArtist:
         self.file_n = path + artist + csv_pre
         self.artist_time = {}
 
-    def collect_song_data(self, song_obj):  # todo spotify, todo fix
+    def collect_song_data(self, song_obj):
         """return dict({'Title': self.title,
                      'Album': self.album,
                      'Year': self.year,
