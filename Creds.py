@@ -1,5 +1,7 @@
+csv_pre = ' Songs.csv'
+
 # tokens
-with open('pass.txt', 'r') as f:
+with open('MiscFiles/pass.txt', 'r') as f:
     file = f.readlines()
     token = file[1].strip()
     usr = file[3].strip()

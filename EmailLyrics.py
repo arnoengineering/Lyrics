@@ -12,10 +12,10 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 
-# Pandas
+# misc
 from Creds import *
 import GrabArtist
-from GrabLyr import soup_lyrics
+from GrabSoupLyr import soup_lyrics
 from datetime import date, datetime
 
 
@@ -25,7 +25,7 @@ path = os.getcwd()
 
 # logging
 log_name = 'log.log'
-logging.basicConfig(filename=log_name, level=logging.INFO)
+logging.basicConfig(filename=log_name, level=logging.DEBUG, format='%(process)d-%(levelname)s-%(message)s')
 
 
 # sets day of week to run on sunday, and timing
@@ -38,8 +38,7 @@ years_80 = list(range(1980, 1990))
 years = list(range(year - 5, year + 1))
 year_range = years_80 + years
 
-file_pre = ' Songs.csv'
-csv_f = 'Time' + file_pre
+csv_f = 'Time' + csv_pre
 
 # list of artist to search
 artist_ls = ["Skillet", "LEDGER", "Icon for Hire", "Lacey Sturm"]
@@ -51,7 +50,7 @@ rand_art = random.choice(artist_ls)  # index columns so dict is correct
 
 def random_song(artist):  # returns song with tile artist and lyrics
     try:
-        song = random.choice(list(artist.values()))
+        song = random.choice(list(artist.values()))  # list of songs
         print('Random Song: ', song['Title'])
         return song  # returns dict of song
     except KeyError as e:
@@ -218,7 +217,7 @@ class SendEmail:
                 print('Time for Email: {}, {}'.format(receiver, datetime.now() - e_time))
 
 
-def loop_artists(do_all=False):
+def loop_artists(do_all=False):  # loops through artist list and ether updates or leaves
     a_dict = {}  # returns dict at end only if required
     for art in artist_ls:
         a = GrabArtist.ReadArtist(art)
@@ -252,15 +251,13 @@ sub_lines = random_sub_song(rand_out)  # gets sub_lyrics
 SendEmail(sub_lines, rand_out)
 tot_time = datetime.now() - start_time
 
-tot_songs = sum([art['Songs'] for art in time_dict])
-try:
+if len(time_dict) > 0:
+    tot_songs = sum([ar['Songs'] for ar in time_dict])
     tps = tot_time / tot_songs
-except ZeroDivisionError:
-    tps = 0
-time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
-if tot_songs > 0:
+    time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
     t_obj = GrabArtist.ReadArtist('Time')
     t_obj.write_csv()
+    print("{} Songs, at: {} per song".format(tot_songs, tps))
 
 print("Total time:",  tot_time)
-print("{} Songs, at: {} per song".format(tot_songs, tps))
+

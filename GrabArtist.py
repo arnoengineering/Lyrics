@@ -1,12 +1,12 @@
 from datetime import datetime
-from Creds import token
+from Creds import token, csv_pre
 
 from lyricsgenius import Genius
 import os
 import pandas as pd
 
 genius = Genius(token)
-
+path = 'Songs/'
 # genius formatting
 genius.remove_section_headers = True
 genius.skip_non_songs = True
@@ -25,7 +25,7 @@ class ReadArtist:
         self.time = datetime.now()
         self.artist = artist
         self.artist_dict = {}
-        self.file_n = artist + ' Songs.csv'
+        self.file_n = path + artist + csv_pre
         self.artist_time = {}
 
     def collect_song_data(self, song_obj):  # todo spotify

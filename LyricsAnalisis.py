@@ -14,7 +14,7 @@ os.chdir(os.path.dirname(sys.argv[0]))
 path = os.getcwd()
 
 # tokens
-with open('pass.txt', 'r') as f:
+with open('MiscFiles/pass.txt', 'r') as f:
     file = f.readlines()
     token = file[1]
     usr = file[3]
