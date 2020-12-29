@@ -1,4 +1,3 @@
-import smtplib
 import random
 import logging
 import sys
@@ -6,6 +5,7 @@ import os
 import re
 
 # email
+import smtplib
 import ssl
 from email import encoders
 from email.mime.text import MIMEText
@@ -13,10 +13,11 @@ from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 
 # Pandas
+from Creds import *
 import GrabArtist
 from GrabLyr import soup_lyrics
-from GrabArtist import ReadArtist
 from datetime import date, datetime
+
 
 # save dir
 os.chdir(os.path.dirname(sys.argv[0]))
@@ -26,14 +27,6 @@ path = os.getcwd()
 log_name = 'log.log'
 logging.basicConfig(filename=log_name, level=logging.INFO)
 
-
-# tokens
-with open('pass.txt', 'r') as f:
-    file = f.readlines()
-    token = file[1].strip()
-    usr = file[3].strip()
-    password = file[5].strip()
-    receivers = file[7].strip().split(',')  # list of all receivers
 
 # sets day of week to run on sunday, and timing
 start_time = datetime.now()
@@ -228,9 +221,10 @@ class SendEmail:
 def loop_artists(do_all=False):
     a_dict = {}  # returns dict at end only if required
     for art in artist_ls:
-        a = ReadArtist(art)
+        a = GrabArtist.ReadArtist(art)
         if do_all:
             a.search_art()
+            time_dict[art] = a.artist_time
         else:
             a.test_csv()
         if art == rand_art:
@@ -265,7 +259,7 @@ except ZeroDivisionError:
     tps = 0
 time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
 if tot_songs > 0:
-    t_obj = ReadArtist('Time')
+    t_obj = GrabArtist.ReadArtist('Time')
     t_obj.write_csv()
 
 print("Total time:",  tot_time)
