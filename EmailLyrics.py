@@ -260,4 +260,3 @@ if len(time_dict) > 0:
     print("{} Songs, at: {} per song".format(tot_songs, tps))
 
 print("Total time:",  tot_time)
-
