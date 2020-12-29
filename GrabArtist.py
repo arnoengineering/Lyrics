@@ -28,14 +28,18 @@ class ReadArtist:
         self.file_n = path + artist + csv_pre
         self.artist_time = {}
 
-    def collect_song_data(self, song_obj):  # todo spotify
+    def collect_song_data(self, song_obj):  # todo spotify, todo fix
         """return dict({'Title': self.title,
                      'Album': self.album,
                      'Year': self.year,
                      'Lyrics': self.lyrics,
                      'image': self.song_art_image_url})"""
         song_dict = song_obj.to_dict()
-
+        med = song_obj.media  # list of media
+        for m in med:
+            if m['provider'] == 'spotify':  # adds url to list
+                url = m['url']
+                song_dict['url'] = url
 
         # assign list to song dictionary entry named after song title
         self.artist_dict[song_dict['Title']] = song_dict

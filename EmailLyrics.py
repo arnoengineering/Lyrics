@@ -131,7 +131,7 @@ class SendEmail:
 
         # what to send
         self.msg['From'] = usr
-        self.hint_ls = ['Album', 'Rank', 'Genre', 'Year']
+        self.hint_ls = ['Album', 'Rank', 'Genre', 'Year', 'url']
 
         if len(self.files) > 0:  # if to send file, will send to first inbox else run normal
             self.attach_email()
