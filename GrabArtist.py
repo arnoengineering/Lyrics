@@ -14,7 +14,7 @@ genius.excluded_terms = ["(Remix)"]
 
 
 def genius_find(title, artist):
-    gen_obj = genius.search_song(title, artist, get_full_info=False)
+    gen_obj = genius.search_song(title, artist, get_full_info=True)
     gen = ReadArtist(artist)
     gen.collect_song_data(gen_obj)
     return gen.artist_dict
@@ -29,7 +29,13 @@ class ReadArtist:
         self.artist_time = {}
 
     def collect_song_data(self, song_obj):  # todo spotify
+        """return dict({'Title': self.title,
+                     'Album': self.album,
+                     'Year': self.year,
+                     'Lyrics': self.lyrics,
+                     'image': self.song_art_image_url})"""
         song_dict = song_obj.to_dict()
+
 
         # assign list to song dictionary entry named after song title
         self.artist_dict[song_dict['Title']] = song_dict
@@ -56,3 +62,6 @@ class ReadArtist:
         else:
             artist_c = pd.read_csv(self.file_n, index_col=0)  # reads jason of rand artist
             self.artist_dict = artist_c.to_dict(orient='index')  # will save dict of values
+
+
+genius_find('Monster', 'Skillet')
