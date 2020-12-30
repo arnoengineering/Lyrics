@@ -1,7 +1,5 @@
 import random
 import logging
-import sys
-import os
 import re
 
 # email
@@ -17,11 +15,6 @@ from Creds import *
 import GrabArtist
 from GrabSoupLyr import soup_lyrics
 from datetime import date, datetime
-
-
-# save dir
-os.chdir(os.path.dirname(sys.argv[0]))
-path = os.getcwd()
 
 # logging
 log_name = 'log.log'

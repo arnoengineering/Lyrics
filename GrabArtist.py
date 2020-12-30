@@ -14,7 +14,7 @@ genius.excluded_terms = ["(Remix)"]
 
 
 def genius_find(title, artist):
-    gen_obj = genius.search_song(title, artist, get_full_info=True)
+    gen_obj = genius.search_song(title, artist, get_full_info=False)
     gen = ReadArtist(artist)
     gen.collect_song_data(gen_obj)
     return gen.artist_dict
