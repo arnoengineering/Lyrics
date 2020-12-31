@@ -14,7 +14,7 @@ genius.excluded_terms = ["(Remix)"]
 
 
 def genius_find(title, artist):
-    gen_obj = genius.search_song(title, artist, get_full_info=True)
+    gen_obj = genius.search_song(title, artist, get_full_info=False)
     gen = ReadArtist(artist)
     gen.collect_song_data(gen_obj)
     return gen.artist_dict
@@ -35,12 +35,14 @@ class ReadArtist:
                      'Lyrics': self.lyrics,
                      'image': self.song_art_image_url})"""
         song_dict = song_obj.to_dict()
-        med = song_obj.media  # list of media
+        med = song_obj.media()  # list of media
         for m in med:
             if m['provider'] == 'spotify':  # adds url to list
                 url = m['url']
                 song_dict['url'] = url
 
+        if song_dict['Album'].lower() == 'nan':
+            del song_dict['Album']
         # assign list to song dictionary entry named after song title
         self.artist_dict[song_dict['Title']] = song_dict
 
@@ -48,6 +50,7 @@ class ReadArtist:
         art_obj = genius.search_artist(self.artist)  # max songs for debug
         for song in art_obj.songs:
             self.collect_song_data(song)
+
         art_time = datetime.now() - self.time
         per_song = art_time / len(self.artist_dict)
         print("{} took: {} seconds; {} songs at: {} per song".format(self.artist, art_time,
@@ -66,6 +69,3 @@ class ReadArtist:
         else:
             artist_c = pd.read_csv(self.file_n, index_col=0)  # reads jason of rand artist
             self.artist_dict = artist_c.to_dict(orient='index')  # will save dict of values
-
-
-genius_find('Monster', 'Skillet')

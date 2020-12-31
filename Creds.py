@@ -1,3 +1,9 @@
+import os
+# save dir
+path = os.getcwd()
+
+if not os.path.exists(os.path.join(path, 'Songs')):
+    os.mkdir('Songs')
 csv_pre = ' Songs.csv'
 
 # tokens
