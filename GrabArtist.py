@@ -35,7 +35,7 @@ class ReadArtist:
                      'Lyrics': self.lyrics,
                      'image': self.song_art_image_url})"""
         song_dict = song_obj.to_dict()
-        med = song_obj.media  # list of media
+        med = song_obj.media()  # list of media
         for m in med:
             if m['provider'] == 'spotify':  # adds url to list
                 url = m['url']
@@ -66,6 +66,3 @@ class ReadArtist:
         else:
             artist_c = pd.read_csv(self.file_n, index_col=0)  # reads jason of rand artist
             self.artist_dict = artist_c.to_dict(orient='index')  # will save dict of values
-
-
-genius_find('Monster', 'Skillet')
