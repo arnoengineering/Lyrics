@@ -41,6 +41,8 @@ class ReadArtist:
                 url = m['url']
                 song_dict['url'] = url
 
+        if song_dict['Album'].lower() == 'nan':
+            del song_dict['Album']
         # assign list to song dictionary entry named after song title
         self.artist_dict[song_dict['Title']] = song_dict
 
@@ -48,6 +50,7 @@ class ReadArtist:
         art_obj = genius.search_artist(self.artist)  # max songs for debug
         for song in art_obj.songs:
             self.collect_song_data(song)
+
         art_time = datetime.now() - self.time
         per_song = art_time / len(self.artist_dict)
         print("{} took: {} seconds; {} songs at: {} per song".format(self.artist, art_time,
