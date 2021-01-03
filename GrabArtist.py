@@ -5,7 +5,7 @@ from lyricsgenius import Genius
 import os
 import pandas as pd
 
-genius = Genius(token)
+genius = Genius(token, timeout=10)
 path = 'Songs/'
 # genius formatting
 genius.remove_section_headers = True
@@ -34,14 +34,16 @@ class ReadArtist:
             str(song_dict['Year'])
         if song_dict['Year'] == 'nan':
             float(song_dict['Year'])
-        song_dict['Year'] = song_dict['Year'].split('-')[0]  # only year not day
-        song_dict['Year'] = song_dict['Year'].split('.')[0]
+        if type(song_dict['Year']) == str:
+            song_dict['Year'] = song_dict['Year'].split('-')[0]  # only year not day
+            song_dict['Year'] = song_dict['Year'].split('.')[0]
 
         med = song_obj.media  # list of media
-        for m in med:
-            if m['provider'] == 'spotify':  # adds url to list
-                url = m['url']
-                song_dict['url'] = url
+        if med is not None:
+            for m in med:
+                if m['provider'] == 'spotify':  # adds url to list
+                    url = m['url']
+                    song_dict['url'] = url
 
         if type(song_dict['Album']) == float:
             del song_dict['Album']

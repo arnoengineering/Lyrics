@@ -248,7 +248,7 @@ SendEmail(sub_lines, rand_out)
 tot_time = datetime.now() - start_time
 
 if len(time_dict) > 0:
-    tot_songs = sum([ar['Songs'] for ar in time_dict])
+    tot_songs = sum([ar['Songs'] for ar in time_dict.values()])
     tps = tot_time / tot_songs
     time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
     t_obj = GrabArtist.ReadArtist('Time')
