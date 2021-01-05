@@ -5,6 +5,7 @@ import collections
 import matplotlib.pyplot as plt
 from scipy import stats
 from GrabArtist import ReadArtist
+import os
 logging.basicConfig(filename='log.log', level=INFO)
 
 
@@ -41,46 +42,47 @@ class ArtistAn:
 
     def save_me(self):  # for song, artist
         temp_dict = {}
-        for alb in self.art_dict.keys():
+        for alb in self.art_dict.keys():  # skip songs with no data
             if alb == 'nan':
                 continue
             print(alb)
             songs = self.art_dict[alb]['Songs']
-            for song in songs:
+
+            for song in songs:  # skip songs with no data
                 if type(song['Lyrics']) == float:
                     songs.remove(song)
                     continue
                 self.count_inst(song)
 
-            if len(songs) == 0:
-                continue
-            cnt_ls = [x['Count'] for x in songs]
-            self.art_dict[alb]['Total'] = sum(cnt_ls)
+            if len(songs) != 0:
+                cnt_ls = [x['Count'] for x in songs]
+                self.art_dict[alb]['Total'] = sum(cnt_ls)
 
-            self.plot_in(cnt_ls, self.art_dict[alb])  # one box
-
-            temp_dict[alb] = self.art_dict[alb]  # only correct get passed
+                self.get_stats(cnt_ls, self.art_dict[alb])  # one box
+                temp_dict[alb] = self.art_dict[alb]  # only correct get passed
 
         self.art_dict = temp_dict
-        total_cnt = [self.art_dict[x]['Total'] for x in self.art_dict.keys()]
+        total_cnt = [self.art_dict[x]['Total'] for x in self.art_dict.keys()]  # only plot if data
         if len(total_cnt) > 0:
-            self.plot_in(total_cnt, self.art_dict)
+            self.get_stats(total_cnt, self.art_dict)
             self.plot_artist()
             self.plot_songs()
 
-    def plot_in(self, ls, var):  # todo one box
-        if len(ls) > 0:
+    def get_stats(self, ls, var):  # gets extra stats or saves as 0
+        if len(ls) > 0:  # if elements in list get stats
             for x, y in zip(self.stats_ls, stats_alb(ls)):
                 var[x] = y
         else:
             for x in self.stats_ls:
                 var[x] = 0
 
-    def plot_form(self, info, ax=None):
+    def plot_form(self, info, ax=None):  # formats plots
         string = 'Stats:\n'
         t_in = {x: info[x] for x in self.stats_ls}
         for x, y in t_in.items():
             string += f'{x}: {y :.3f}\n'
+
+        # if no ax is given then save each then plot global
         if ax is None:
             plt.figtext(0.5, 0, string)
         else:
@@ -91,11 +93,13 @@ class ArtistAn:
         d_no_e = {x: y for x, y in ls.items() if x not in self.stats_ls}
         return n_list, d_no_e
 
-    def plot_artist(self):
+    def plot_artist(self):  # plot data for total album
         tot_ls = ['Total', 'Ave', 'Count']
         names, temp_d = self.names_list(self.art_dict)
         plt.figure(self.plt_num)
-        plt.title(f'Album stats: {self.sort}')
+        tit = f'Album stats: {self.sort}'
+        plt.title(tit)
+
         for num, v in enumerate(tot_ls, start=311):  # lists to plot
             ax = plt.subplot(num)
             ax.set_title(f'{v} per alb')
@@ -103,12 +107,21 @@ class ArtistAn:
             ax.set_ylabel(v)
             ax.bar(names, [temp_d[x][v] for x in temp_d.keys()])
         self.plot_form(self.art_dict)
+        save_p(tit.split(':')[0])
         self.plt_num += 1
+
+    def save_p(self, ti):
+        f_dir = os.path.join('Plots', self.sort)
+        if not os.path.exists(f_dir):
+            os.mkdir(f_dir)
+        name = ti + '.png'
+        name = os.path.join(f_dir, name)
+        plt.savefig(name)
 
     def plot_songs(self,):  # subplots
         alb_len = len(self.art_dict)
         si, rem = divmod(alb_len, 6)  # 3x2
-        size = si * 6
+        size = si * 6  # sizing
         t_d = {x: y for x, y in self.art_dict.items() if x not in self.stats_ls}
 
         for num, alb in enumerate(t_d, start=0):
@@ -117,26 +130,29 @@ class ArtistAn:
 
             song_d = {s['Title']: s['Count'] for s in songs['Songs']}
             names, temp_d = self.names_list(song_d)
+            tit = 'Count vs song:\n Alb:{}-{}'.format(num, num + 6)  # title to reffernce later
             n = num % 6
 
             if n == 0:
-                # save_p()
+                if num != 0:  # saves all plots
+                    save_p(tit.split('\n')[1])
                 plt.figure(self.plt_num)
                 self.plt_num += 1
                 # rem alb ex
                 # t =
-                plt.title('Count vs song:\n Alb:{}-{}'.format(num, num + 6))
+                plt.title(tit)
             if num <= size:
                 dim = 321 + n
             else:
                 dim = rem * 100 + 11 + n
 
-            ax = plt.subplot(dim)
+            ax = plt.subplot(dim)  # formatting
             ax.set_title(alb)
             ax.set_xlabel('Songs')
             ax.set_ylabel(f'Counts: {self.phrase}')
             ax.bar(names, list(temp_d.values()))  # names
             self.plot_form(songs, ax=ax)
+        save_p(tit.split('\n')[1])  # saves last
 
 
 def stats_alb(ls):
@@ -147,12 +163,6 @@ def stats_alb(ls):
     sd = numpy.std(ls)
     sem = stats.sem(ls)
     return [cnt, tot, av, mode, sd, sem]
-
-
-def save_p(pl):
-    name = pl.title + '.png'
-    # name = os.path.join(path, name)
-    plt.savefig(name)
 
 
 art = ReadArtist('Skillet')
