@@ -28,7 +28,7 @@ class ReadArtist:
         if type(song_dict['year']) == float:
             str(song_dict['year'])
         if song_dict['year'] == 'nan':
-            float(song_dict['Year'])
+            float(song_dict['year'])
         if type(song_dict['year']) == str:
             song_dict['year'] = song_dict['year'].split('-')[0]  # only year not day
             song_dict['year'] = song_dict['year'].split('.')[0]
