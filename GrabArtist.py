@@ -33,7 +33,7 @@ class ReadArtist:
             song_dict['year'] = song_dict['year'].split('-')[0]  # only year not day
             song_dict['year'] = song_dict['year'].split('.')[0]
 
-        med = song_obj.media()  # list of media
+        med = song_obj.media  # list of media
         if med is not None:
             for m in med:
                 if m['provider'] == 'spotify':  # adds url to list
