@@ -25,13 +25,13 @@ class ReadArtist:
 
         song_dict = song_obj.to_dict()
 
-        if type(song_dict['Year']) == float:
-            str(song_dict['Year'])
-        if song_dict['Year'] == 'nan':
+        if type(song_dict['year']) == float:
+            str(song_dict['year'])
+        if song_dict['year'] == 'nan':
             float(song_dict['Year'])
-        if type(song_dict['Year']) == str:
-            song_dict['Year'] = song_dict['Year'].split('-')[0]  # only year not day
-            song_dict['Year'] = song_dict['Year'].split('.')[0]
+        if type(song_dict['year']) == str:
+            song_dict['year'] = song_dict['year'].split('-')[0]  # only year not day
+            song_dict['year'] = song_dict['year'].split('.')[0]
 
         med = song_obj.media()  # list of media
         if med is not None:
@@ -40,10 +40,10 @@ class ReadArtist:
                     url = m['url']
                     song_dict['url'] = url
 
-        if type(song_dict['Album']) == float:
-            del song_dict['Album']
+        if type(song_dict['album']) == float:
+            del song_dict['album']
         # assign list to song dictionary entry named after song title
-        self.artist_dict[song_dict['Title']] = song_dict
+        self.artist_dict[song_dict['title']] = {x.title(): y for x, y in song_dict.items()}
 
     def search_art(self):
         art_obj = genius.search_artist(self.artist)  # max songs for debug
