@@ -7,6 +7,10 @@ from scipy import stats
 from GrabArtist import ReadArtist
 import os
 logging.basicConfig(filename='log.log', level=INFO)
+path = os.getcwd()
+plot_dir = os.path.join(path, 'Plots')  # create dir for plots
+if not os.path.exists(plot_dir):
+    os.mkdir(plot_dir)
 
 
 class ArtistAn:
@@ -107,22 +111,26 @@ class ArtistAn:
             ax.set_ylabel(v)
             ax.bar(names, [temp_d[x][v] for x in temp_d.keys()])
         self.plot_form(self.art_dict)
-        save_p(tit.split(':')[0])
+        self.save_p(tit.split(':')[0])
         self.plt_num += 1
 
     def save_p(self, ti):
-        f_dir = os.path.join('Plots', self.sort)
+        f_dir = os.path.join(plot_dir, self.sort)
         if not os.path.exists(f_dir):
             os.mkdir(f_dir)
         name = ti + '.png'
         name = os.path.join(f_dir, name)
-        plt.savefig(name)
+        try:
+            plt.savefig(name)
+        except FileExistsError:
+            print(ti, ' Already exists')
 
     def plot_songs(self,):  # subplots
         alb_len = len(self.art_dict)
         si, rem = divmod(alb_len, 6)  # 3x2
         size = si * 6  # sizing
         t_d = {x: y for x, y in self.art_dict.items() if x not in self.stats_ls}
+        tit = 'Alb'
 
         for num, alb in enumerate(t_d, start=0):
 
@@ -130,12 +138,12 @@ class ArtistAn:
 
             song_d = {s['Title']: s['Count'] for s in songs['Songs']}
             names, temp_d = self.names_list(song_d)
-            tit = 'Count vs song:\n Alb:{}-{}'.format(num, num + 6)  # title to reffernce later
+            tit = 'Count vs song:\n Alb:{}-{}'.format(num, num + 6)  # title to reference later
             n = num % 6
 
             if n == 0:
                 if num != 0:  # saves all plots
-                    save_p(tit.split('\n')[1])
+                    self.save_p(tit.split('\n')[1].replace(':', ' '))
                 plt.figure(self.plt_num)
                 self.plt_num += 1
                 # rem alb ex
@@ -152,7 +160,7 @@ class ArtistAn:
             ax.set_ylabel(f'Counts: {self.phrase}')
             ax.bar(names, list(temp_d.values()))  # names
             self.plot_form(songs, ax=ax)
-        save_p(tit.split('\n')[1])  # saves last
+        self.save_p(tit.split('\n')[1].replace(':', ' '))  # saves last
 
 
 def stats_alb(ls):
@@ -165,7 +173,8 @@ def stats_alb(ls):
     return [cnt, tot, av, mode, sd, sem]
 
 
-art = ReadArtist('Skillet')
+artist = 'Skillet'
+art = ReadArtist(artist)
 art.test_csv()
 
 
@@ -180,4 +189,11 @@ for li in lst:
     alb_s.save_me()
     ret_num = alb_s.plt_num
 
-plt.show()
+    # saves
+    art.artist_dict = alb_s.art_dict
+    art.file_n = f'Stats, Art: {artist}, {li}.csv'
+    art.write_csv()
+
+show = input('Show Plots? (y/n)')
+if show.lower() == 'y':
+    plt.show()
