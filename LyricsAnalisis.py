@@ -1,21 +1,27 @@
 import numpy
+from logging import INFO
+import logging
 import collections
 import matplotlib.pyplot as plt
 from scipy import stats
 from GrabArtist import ReadArtist
+logging.basicConfig(filename='log.log', level=INFO)
 
 
 class ArtistAn:
-    def __init__(self, artist, sort, num=1):
-        self.artist = artist
-        self.art_dict = {}
-        self.stats_ls = ['Count', 'Total', 'Ave', 'Mode', 'Se', 'SD']
-        self.sort = sort
+    def __init__(self, artist, sort, num=1, lots_info=True):
 
-        self.phrase = 'Save Me'
-        self.plt_num = num
+        self.artist = artist  # initial dict
+        self.art_dict = {}  # dict that gets edited
+        self.stats_ls = ['Count', 'Total', 'Ave', 'Mode', 'Se', 'SD']
+        self.sort = sort  # by what to sort data
+        self.lots_info = lots_info  # if songs to be plotted
+
+        self.phrase = 'Save Me'  # phrase to search for
+        self.plt_num = num  # num to hold figure
 
     def song_2_alb(self):
+        # temp dict to switch keys
         temp_dict = collections.defaultdict(list)
         for song in self.artist.values():
             try:
@@ -24,12 +30,9 @@ class ArtistAn:
                 continue
             temp_dict[song_sort].append(song)
 
-        s_dict = {a: {'Songs': s} for a, s in temp_dict.items()}
-        type_x = lambda x: type(x) == float
-        if all([type_x(x) for x in s_dict.items()]):
-            self.art_dict = {x: y for x, y in sorted(s_dict.items())}
-        else:
-            self.art_dict = s_dict
+        s_dict = {str(a): {'Songs': s} for a, s in temp_dict.items()}  # sorting
+
+        self.art_dict = {x: s_dict[x] for x in sorted(s_dict.keys())}
 
     def count_inst(self, song):
         cnt = song['Lyrics'].lower().count(self.phrase.lower())
@@ -39,9 +42,8 @@ class ArtistAn:
     def save_me(self):  # for song, artist
         temp_dict = {}
         for alb in self.art_dict.keys():
-            if alb == float:
-                if numpy.isnan(alb):
-                    continue
+            if alb == 'nan':
+                continue
             print(alb)
             songs = self.art_dict[alb]['Songs']
             for song in songs:
@@ -57,7 +59,7 @@ class ArtistAn:
 
             self.plot_in(cnt_ls, self.art_dict[alb])  # one box
 
-            temp_dict[str(alb)] = self.art_dict[alb]  # only correct get passed
+            temp_dict[alb] = self.art_dict[alb]  # only correct get passed
 
         self.art_dict = temp_dict
         total_cnt = [self.art_dict[x]['Total'] for x in self.art_dict.keys()]
@@ -74,12 +76,15 @@ class ArtistAn:
             for x in self.stats_ls:
                 var[x] = 0
 
-    def plot_form(self, info):
+    def plot_form(self, info, ax=None):
         string = 'Stats:\n'
         t_in = {x: info[x] for x in self.stats_ls}
         for x, y in t_in.items():
-            string += f'{x}: {y}\n'
-        plt.figtext(0.5, 0, string)
+            string += f'{x}: {y :.3f}\n'
+        if ax is None:
+            plt.figtext(0.5, 0, string)
+        else:
+            ax.text(0.5, 0, string)
 
     def names_list(self, ls):
         n_list = [a[0:2] for a in ls.keys() if a not in self.stats_ls]
@@ -87,7 +92,7 @@ class ArtistAn:
         return n_list, d_no_e
 
     def plot_artist(self):
-        tot_ls = ['Total', 'Ave', 'Count']  # todo if in, creat temp dict to plot
+        tot_ls = ['Total', 'Ave', 'Count']
         names, temp_d = self.names_list(self.art_dict)
         plt.figure(self.plt_num)
         plt.title(f'Album stats: {self.sort}')
@@ -115,10 +120,11 @@ class ArtistAn:
             n = num % 6
 
             if n == 0:
+                # save_p()
                 plt.figure(self.plt_num)
-                self.plot_form(songs)
                 self.plt_num += 1
                 # rem alb ex
+                # t =
                 plt.title('Count vs song:\n Alb:{}-{}'.format(num, num + 6))
             if num <= size:
                 dim = 321 + n
@@ -130,6 +136,7 @@ class ArtistAn:
             ax.set_xlabel('Songs')
             ax.set_ylabel(f'Counts: {self.phrase}')
             ax.bar(names, list(temp_d.values()))  # names
+            self.plot_form(songs, ax=ax)
 
 
 def stats_alb(ls):
@@ -140,6 +147,12 @@ def stats_alb(ls):
     sd = numpy.std(ls)
     sem = stats.sem(ls)
     return [cnt, tot, av, mode, sd, sem]
+
+
+def save_p(pl):
+    name = pl.title + '.png'
+    # name = os.path.join(path, name)
+    plt.savefig(name)
 
 
 art = ReadArtist('Skillet')
