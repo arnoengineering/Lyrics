@@ -22,11 +22,6 @@ class ReadArtist:
         self.artist_time = {}
 
     def collect_song_data(self, song_obj):
-        """return dict({'Title': self.title,
-                     'Album': self.album,
-                     'Year': self.year,
-                     'Lyrics': self.lyrics,
-                     'image': self.song_art_image_url})"""
 
         song_dict = song_obj.to_dict()
 
@@ -61,7 +56,7 @@ class ReadArtist:
                                                                      len(self.artist_dict), per_song))
         self.artist_time = {'Time': art_time, 'Songs': len(self.artist_dict), ' Time per Song': per_song}
 
-    def write_csv(self):  # writes all songs for an artist
+    def write_csv(self):  # writes all songs for an artist_d
         df = pd.DataFrame.from_dict(self.artist_dict, orient='index')
         df.to_csv(self.file_n, header=True, index=True)
 
@@ -71,7 +66,7 @@ class ReadArtist:
             self.write_csv()
 
         else:
-            artist_c = pd.read_csv(self.file_n, index_col=0)  # reads jason of rand artist
+            artist_c = pd.read_csv(self.file_n, index_col=0)  # reads jason of rand artist_d
             self.artist_dict = artist_c.to_dict(orient='index')  # will save dict of values
 
 

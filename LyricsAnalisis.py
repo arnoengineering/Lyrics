@@ -6,17 +6,23 @@ import matplotlib.pyplot as plt
 from scipy import stats
 from GrabArtist import ReadArtist
 import os
+
+# start
 logging.basicConfig(filename='log.log', level=INFO)
 path = os.getcwd()
 plot_dir = os.path.join(path, 'Plots')  # create dir for plots
 if not os.path.exists(plot_dir):
     os.mkdir(plot_dir)
 
+artists = ['Skillet']
+sort_ls = ['Album', 'Year']
+
 
 class ArtistAn:
-    def __init__(self, artist, sort, num=1, lots_info=True):
+    def __init__(self, art_name, artist_d, sort, num=1, lots_info=True):
 
-        self.artist = artist  # initial dict
+        self.artist_d_in = artist_d  # initial dict
+        self.art_name = art_name
         self.art_dict = {}  # dict that gets edited
         self.stats_ls = ['Count', 'Total', 'Ave', 'Mode', 'Se', 'SD']
         self.sort = sort  # by what to sort data
@@ -28,7 +34,7 @@ class ArtistAn:
     def song_2_alb(self):
         # temp dict to switch keys
         temp_dict = collections.defaultdict(list)
-        for song in self.artist.values():
+        for song in self.artist_d_in.values():
             try:
                 song_sort = song.pop(self.sort)
             except KeyError:
@@ -44,7 +50,7 @@ class ArtistAn:
         song['Count'] = cnt
         del song['Lyrics']
 
-    def save_me(self):  # for song, artist
+    def save_me(self):  # for song, artist_d
         temp_dict = {}
         for alb in self.art_dict.keys():  # skip songs with no data
             if alb == 'nan':
@@ -69,7 +75,7 @@ class ArtistAn:
         total_cnt = [self.art_dict[x]['Total'] for x in self.art_dict.keys()]  # only plot if data
         if len(total_cnt) > 0:
             self.get_stats(total_cnt, self.art_dict)
-            self.plot_artist()
+            self.plot_alb()
             self.plot_songs()
 
     def get_stats(self, ls, var):  # gets extra stats or saves as 0
@@ -97,7 +103,7 @@ class ArtistAn:
         d_no_e = {x: y for x, y in ls.items() if x not in self.stats_ls}
         return n_list, d_no_e
 
-    def plot_artist(self):  # plot data for total album
+    def plot_alb(self):  # plot data for total album
         tot_ls = ['Total', 'Ave', 'Count']
         names, temp_d = self.names_list(self.art_dict)
         plt.figure(self.plt_num)
@@ -115,11 +121,14 @@ class ArtistAn:
         self.plt_num += 1
 
     def save_p(self, ti):
-        f_dir = os.path.join(plot_dir, self.sort)
+        f_dir = os.path.join(plot_dir, self.sort, self.art_name)  # dir per art
+
         if not os.path.exists(f_dir):
             os.mkdir(f_dir)
+
         name = ti + '.png'
         name = os.path.join(f_dir, name)
+
         try:
             plt.savefig(name)
         except FileExistsError:
@@ -173,26 +182,27 @@ def stats_alb(ls):
     return [cnt, tot, av, mode, sd, sem]
 
 
-artist = 'Skillet'
-art = ReadArtist(artist)
-art.test_csv()
-
-
-lst = ['Album', 'Year']
-ret_num = 1
-for li in lst:
-    print('\n\n')
+def plot_art(ar, r_num):
+    art = ReadArtist(ar)
     art.test_csv()
-    a_d = art.artist_dict
-    alb_s = ArtistAn(a_d, li, ret_num)
-    alb_s.song_2_alb()
-    alb_s.save_me()
-    ret_num = alb_s.plt_num
+    for li in sort_ls:
+        print('\n\n')
+        art.test_csv()
+        a_d = art.artist_dict
+        alb_s = ArtistAn(ar, a_d, li, r_num)
+        alb_s.song_2_alb()
+        alb_s.save_me()
+        r_num = alb_s.plt_num
 
-    # saves
-    art.artist_dict = alb_s.art_dict
-    art.file_n = f'Stats, Art: {artist}, {li}.csv'
-    art.write_csv()
+        # saves
+        art.artist_dict = alb_s.art_dict
+        art.file_n = f'Stats, Art: {ar}, {li}.csv'
+        art.write_csv()
+
+
+ret_num = 1
+for arti in artists:
+    plot_art(arti, ret_num)
 
 show = input('Show Plots? (y/n)')
 if show.lower() == 'y':
