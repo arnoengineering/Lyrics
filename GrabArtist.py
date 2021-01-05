@@ -23,6 +23,7 @@ class ReadArtist:
 
     def collect_song_data(self, song_obj):
 
+        med = song_obj.media  # list of media, first to avoid error
         song_dict = song_obj.to_dict()
 
         if type(song_dict['Year']) == float:
@@ -33,7 +34,7 @@ class ReadArtist:
             song_dict['Year'] = song_dict['Year'].split('-')[0]  # only year not day
             song_dict['Year'] = song_dict['Year'].split('.')[0]
 
-        med = song_obj.media  # list of media
+
         if med is not None:
             for m in med:
                 if m['provider'] == 'spotify':  # adds url to list
