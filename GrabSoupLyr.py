@@ -8,7 +8,7 @@ def soup_lyrics(years):
 
     def get_chart_entries(url):
         """
-        Returns a list of dictionaries with the rank, title and artist of each song
+        Returns a list of dictionaries with the rank, title and artist_d of each song
         from the chart on the passed url page
         """
 
@@ -23,7 +23,7 @@ def soup_lyrics(years):
 
                           # replacing 'x' and 'X' with '&' as that's how genius.com has the names
                           # need to match so the lyrics be looked up later
-                          'artist': entry.find("div",
+                          'artist_d': entry.find("div",
                                                attrs={"class": "ye-chart-item__artist"}).text.strip() \
                          .replace(' x ', ' & ').replace(' X ', ' & ')})
 

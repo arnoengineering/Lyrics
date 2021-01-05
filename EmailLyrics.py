@@ -21,7 +21,7 @@ from datetime import date, datetime
 
 # logging
 log_name = 'log.log'
-logging.basicConfig(filename=log_name, level=logging.DEBUG, format='%(process)d-%(levelname)s-%(message)s')
+logging.basicConfig(filename=log_name, level=logging.INFO, format='%(process)d-%(levelname)s-%(message)s')
 
 
 # sets day of week to run on sunday, and timing
@@ -36,7 +36,7 @@ year_range = years_80 + years
 
 csv_f = 'Time' + csv_pre
 
-# list of artist to search
+# list of artist_d to search
 artist_ls = ["Skillet", "LEDGER", "Icon for Hire", "Lacey Sturm"]
 time_dict = {}  # initial dict to save info about artists
 tot_songs = 0
@@ -44,7 +44,7 @@ files = [csv_f]  # list top send
 rand_art = random.choice(artist_ls)  # index columns so dict is correct
 
 
-def random_song(artist):  # returns song with tile artist and lyrics
+def random_song(artist):  # returns song with tile artist_d and lyrics
     try:
         song = random.choice(list(artist.values()))  # list of songs
         print('Random Song: ', song['Title'])
@@ -78,7 +78,7 @@ def rand_soup_lyrics():  # runs module to scrape soup,
     soup_st = datetime.now()
     song = soup_lyrics(year_range)  # gets random song per chart
     soup_time = datetime.now()
-    artist_dict = GrabArtist.genius_find(song['song'], song['artist'])
+    artist_dict = GrabArtist.genius_find(song['song'], song['artist_d'])
 
     print('Got Billboard Song in: {}, Genies search in: {}'.format(soup_time - soup_st, datetime.now() - soup_time))
     artist_dict = artist_dict[song['song']]
@@ -213,7 +213,7 @@ class SendEmail:
                 print('Time for Email: {}, {}'.format(receiver, datetime.now() - e_time))
 
 
-def loop_artists(do_all=False):  # loops through artist list and ether updates or leaves
+def loop_artists(do_all=False):  # loops through artist_d list and ether updates or leaves
     a_dict = {}  # returns dict at end only if required
     for art in artist_ls:
         a = GrabArtist.ReadArtist(art)
@@ -248,7 +248,7 @@ SendEmail(sub_lines, rand_out)
 tot_time = datetime.now() - start_time
 
 if len(time_dict) > 0:
-    tot_songs = sum([ar['Songs'] for ar in time_dict])
+    tot_songs = sum([ar['Songs'] for ar in time_dict.values()])
     tps = tot_time / tot_songs
     time_dict['Total'] = {'Time': tot_time, 'Songs': tot_songs, 'Time per Song': tps}
     t_obj = GrabArtist.ReadArtist('Time')
