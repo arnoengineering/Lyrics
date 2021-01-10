@@ -25,7 +25,7 @@ class ReadArtist:
 
         song_dict = song_obj.to_dict()
 
-        song_dict['Artist'] = self.artist
+        song_dict['artist'] = self.artist
         if type(song_dict['year']) == float:
             str(song_dict['year'])
         if song_dict['year'] == 'nan':
