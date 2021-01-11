@@ -198,6 +198,8 @@ class SendEmail:
             self.msg.attach(MIMEText(form_html, 'html'))
         except (KeyError, FileNotFoundError) as e:
             print('Error Formatting HTML: ', e)
+            ar = GrabArtist.ReadArtist(rand_art)
+            ar.search_art()
 
     def email_base(self):  # sends message
 

@@ -25,7 +25,7 @@ class ReadArtist:
 
         song_dict = song_obj.to_dict()
 
-        song_dict['artist'] = self.artist
+        song_dict['Artist'] = self.artist
         if type(song_dict['year']) == float:
             str(song_dict['year'])
         if song_dict['year'] == 'nan':
@@ -45,6 +45,7 @@ class ReadArtist:
             del song_dict['album']
         # assign list to song dictionary entry named after song title
         self.artist_dict[song_dict['title']] = {x.title(): y for x, y in song_dict.items()}
+        self.write_csv()
 
     def search_art(self):
         art_obj = genius.search_artist(self.artist)  # max songs for debug
@@ -64,7 +65,6 @@ class ReadArtist:
     def test_csv(self):
         if not os.path.exists(self.file_n):
             self.search_art()
-            self.write_csv()
 
         else:
             artist_c = pd.read_csv(self.file_n, index_col=0)  # reads jason of rand artist_d
